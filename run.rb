@@ -18,3 +18,4 @@ p.feed(data)
 
 st = SiteTemplatizer.new
 st.print(p.html, '')
+st.post_run
