@@ -7,11 +7,13 @@ class SiteTemplatizer
   
     node.children.each do |n|
       if n.kind_of?(HTMLTree::Element)
+        line = "#{tab}<#{n.tag}"
         if n.children.size > 0
-          puts "#{tab}<#{n.tag}"
+          line = line + '>'
         else
-          puts "#{tab}<#{n.tag} />"
+          line = line + ' />'
         end
+        puts line
       end
       print(n, " #{tab}")
       if n.kind_of?(HTMLTree::Element) and n.children.size > 0
