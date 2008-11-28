@@ -1,5 +1,6 @@
 class SiteTemplatizer
-
+  include Magick
+  
   EXCLUDE = ['script', 'link']
 
   def initialize
@@ -41,7 +42,7 @@ class SiteTemplatizer
     
     if (n.tag == 'img')
       download_image(hash['src'])
-      hash['src'] = 'test'
+      hash['src'] = "images/#{@images[hash['src']]}.png"
     end
     
     buff = []
@@ -60,10 +61,14 @@ class SiteTemplatizer
     @images[src] = @images.size
     name = @images[src]
     suffix = src[-3..-1]
-    file = File.new("images/#{name}.#{suffix}", "w")
+    file = File.new("images/orig/#{name}.#{suffix}", "w")
     file << res.body
     file.close
-  rescue
+    orig = ImageList.new("images/orig/#{name}.#{suffix}").first
+    placeholder = Image.new(orig.columns, orig.rows) { self.background_color = "blue" }
+    placeholder.write("images/#{name}.png")
+  rescue Object => e
+    pp e
   end
   
   def handle_close(n, tab)

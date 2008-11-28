@@ -3,6 +3,7 @@ require 'pp'
 require 'net/http'
 require 'mechanize'
 require 'html/tree'
+require 'RMagick'
 require 'site_templatizer.rb'
 
 #http = Net::HTTP.new('www.cpp.com', 80)
