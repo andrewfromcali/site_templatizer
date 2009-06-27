@@ -12,11 +12,11 @@ text = Magick::Draw.new
 text.pointsize = 36
 
 y=30;
-fonts.each do |font|
+fonts.each_with_index do |font, i|
   next if font.index('fonts.cache')
   next if font.index('Apple')
   text.font = '/Library/Fonts/Arial' 
-  text.annotate(ex, 0,0,320,y, font[14..-1]) do 
+  text.annotate(ex, 0,0,320,y, "#{i} #{font[14..-1]}") do 
     self.fill = 'maroon'
   end
   text.font = font 
