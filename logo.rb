@@ -5,7 +5,17 @@ require 'RMagick'
 class Logo
 
   def new_pix(p, y)
-    Magick::Pixel.new(p.red / 2, p.green / 2 , p.blue / 2, 0)
+    if y < 10
+      val = 0.42
+    elsif y == 17
+      val = 1
+    end
+    
+    red   = p.red * val 
+    green = p.green * val
+    blue  = p.blue * val
+
+    Magick::Pixel.new(red, green, blue, p.opacity)
   end
 
   def render
@@ -19,6 +29,13 @@ class Logo
 
     mirror = base.rotate(180).flop.crop(0, 0, w, h * 0.65)
     mirror.each_pixel do |p, x, y|
+
+      #rgb(255, 152, 7)
+      #rgb(68, 55, 36)
+      #
+      #255 255 255
+      #57  57   57
+      
 
       if p.red != 0 and p.green != 0 and p.blue != 0
         p = new_pix(p, y)
