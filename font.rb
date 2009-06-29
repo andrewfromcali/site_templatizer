@@ -2,10 +2,11 @@ require 'rubygems'
 require 'pp'
 require 'RMagick'
 
-Rows = 1500
+Rows = 2500
 Cols = 800
 
 fonts = Dir['/Library/Fonts/*']
+fonts += Dir['/Users/aa/Library/Fonts/*']
 ex = Magick::Image.new(Cols, Rows)
 
 text = Magick::Draw.new
@@ -13,6 +14,7 @@ text.pointsize = 36
 
 y=30;
 fonts.each_with_index do |font, i|
+  pp font
   next if font.index('fonts.cache')
   next if font.index('Apple')
   text.font = '/Library/Fonts/Arial' 

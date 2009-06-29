@@ -1,22 +1,9 @@
 require 'rubygems'
 require 'pp'
 require 'RMagick'
+include Magick
 
 class Logo
-
-  def new_pix(p, y)
-    if y < 10
-      val = 0.42
-    elsif y == 17
-      val = 1
-    end
-    
-    red   = p.red * val 
-    green = p.green * val
-    blue  = p.blue * val
-
-    Magick::Pixel.new(red, green, blue, p.opacity)
-  end
 
   def render
     base = Magick::Image.new(@met1.width+@met2.width+15, @met1.height) do
@@ -28,20 +15,12 @@ class Logo
     draw_word(@word2, @met1.width+12, 20, '#FF9807', base)
 
     mirror = base.rotate(180).flop.crop(0, 0, w, h * 0.65)
-    mirror.each_pixel do |p, x, y|
 
-      #rgb(255, 152, 7)
-      #rgb(68, 55, 36)
-      #
-      #255 255 255
-      #57  57   57
-      
-
-      if p.red != 0 and p.green != 0 and p.blue != 0
-        p = new_pix(p, y)
-      end
-      mirror.store_pixels(x, y, 1, 1, [p])
-    end
+    grad = GradientFill.new(0, 0, w, 0, "black", "gray35")
+    opacity_mask = Image.new(w, h, grad)
+    mirror.matte = true
+    opacity_mask.matte = false
+    mirror.composite!(opacity_mask, CenterGravity, CopyOpacityCompositeOp)
 
     gc = Magick::Draw.new
     gc.composite(0, 30, 0, 0, mirror)
@@ -70,6 +49,7 @@ class Logo
 
   def initialize(font_index, word1, word2)
     fonts = Dir['/Library/Fonts/*']
+    fonts += Dir['/Users/aa/Library/Fonts/*']
     @font = fonts[font_index.to_i] 
     @word1 = word1
     @word2 = word2
