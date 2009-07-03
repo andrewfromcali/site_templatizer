@@ -9,26 +9,27 @@ class Logo
     logo = Magick::Image.new(800, 200) do
       self.background_color = "#282828"
     end
-    draw_word(@word1, 0, 'white', logo)
-    draw_word(@word2, @met1.width+2, '#FF9807', logo)
+    draw_word(@word1, 0, 0, 'white', logo)
+    draw_word(@word2, @met1.width+2, 0, '#FF9807', logo)
     logo.trim!
+    orig = logo.copy
     logo.flip!
 
-    bg = Magick::Image.new(logo.columns*1.20, logo.rows*2.00) do
+    bg = Magick::Image.new(logo.columns*1, logo.rows*1.67) do
       self.background_color = "#282828"
     end
 
     mask = Magick::Image.new(1, 15)
-    pixels = [Magick::Pixel.from_color("#1f1f1f"),
-              Magick::Pixel.from_color("#1c1c1c"),
-              Magick::Pixel.from_color("#181818"),
-              Magick::Pixel.from_color("#141414"),
-              Magick::Pixel.from_color("#0F0F0F"),
-              Magick::Pixel.from_color("#0B0B0B"),
-              Magick::Pixel.from_color("#080808"),
+    pixels = [Magick::Pixel.from_color("#000000"),
+              Magick::Pixel.from_color("#000000"),
+              Magick::Pixel.from_color("#000000"),
+              Magick::Pixel.from_color("#333333"),
+              Magick::Pixel.from_color("#222222"),
+              Magick::Pixel.from_color("#1E1E1E"),
+              Magick::Pixel.from_color("#121212"),
+              Magick::Pixel.from_color("#0A0A0A"),
               Magick::Pixel.from_color("#050505"),
               Magick::Pixel.from_color("#020202"),
-              Magick::Pixel.from_color("#000000"),
               Magick::Pixel.from_color("#000000"),
               Magick::Pixel.from_color("#000000"),
               Magick::Pixel.from_color("#000000"),
@@ -43,11 +44,21 @@ class Logo
     logo.composite!(mask, Magick::CenterGravity, Magick::CopyOpacityCompositeOp)
 
     final = bg.composite(logo, Magick::SouthGravity, Magick::OverCompositeOp)
-
-    final.write('logo.png')
+    trans = Magick::Image.new(800, 200) do
+      self.background_color = "none"
+    end
+    draw_word(@word1, 0, 0, 'white', trans)
+    draw_word(@word2, @met1.width+2, 0, '#FF9807', trans)
+    trans.trim!
+    final = final.composite(trans, Magick::NorthGravity, Magick::OverCompositeOp)
+    done = Magick::Image.new(final.columns*1.20, final.rows*1.20) do
+      self.background_color = "#282828"
+    end
+    done = done.composite(final, Magick::SouthGravity, Magick::OverCompositeOp)
+    done.write('logo.png')
   end
 
-  def draw_word(word, x, color, image)
+  def draw_word(word, x, y, color, image)
     gc = Magick::Draw.new
     gc.font = @font
     gc.gravity Magick::WestGravity
@@ -55,7 +66,7 @@ class Logo
     gc.pointsize = @size 
     gc.fill = color
     gc.stroke = 'none'
-    gc.text(x,0,word)
+    gc.text(x,y,word)
     gc.draw(image)
   end
 
@@ -73,7 +84,7 @@ class Logo
 
     gc = Magick::Draw.new
     gc.font = @font
-    @size = 72
+    @size = 36
     gc.pointsize = @size 
     @met1 = gc.get_type_metrics(@word1)
     @met2 = gc.get_type_metrics(@word2)
