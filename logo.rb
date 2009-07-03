@@ -6,39 +6,56 @@ include Magick
 class Logo
 
   def render
-    base = Magick::Image.new(@met1.width+@met2.width+15, @met1.height) do
-      self.background_color = 'none'
+    logo = Magick::Image.new(800, 200) do
+      self.background_color = "#282828"
     end
-    w = base.columns
-    h = base.rows
-    draw_word(@word1, 10, 20, 'white', base)
-    draw_word(@word2, @met1.width+12, 20, '#FF9807', base)
+    draw_word(@word1, 0, 'white', logo)
+    draw_word(@word2, @met1.width+2, '#FF9807', logo)
+    logo.trim!
+    logo.flip!
 
-    mirror = base.rotate(180).flop.crop(0, 0, w, h * 0.65)
+    bg = Magick::Image.new(logo.columns*1.20, logo.rows*2.00) do
+      self.background_color = "#282828"
+    end
 
-    grad = GradientFill.new(0, 0, w, 0, "black", "gray35")
-    opacity_mask = Image.new(w, h, grad)
-    mirror.matte = true
-    opacity_mask.matte = false
-    mirror.composite!(opacity_mask, CenterGravity, CopyOpacityCompositeOp)
+    mask = Magick::Image.new(1, 15)
+    pixels = [Magick::Pixel.from_color("#1f1f1f"),
+              Magick::Pixel.from_color("#1c1c1c"),
+              Magick::Pixel.from_color("#181818"),
+              Magick::Pixel.from_color("#141414"),
+              Magick::Pixel.from_color("#0F0F0F"),
+              Magick::Pixel.from_color("#0B0B0B"),
+              Magick::Pixel.from_color("#080808"),
+              Magick::Pixel.from_color("#050505"),
+              Magick::Pixel.from_color("#020202"),
+              Magick::Pixel.from_color("#000000"),
+              Magick::Pixel.from_color("#000000"),
+              Magick::Pixel.from_color("#000000"),
+              Magick::Pixel.from_color("#000000"),
+              Magick::Pixel.from_color("#000000"),
+              Magick::Pixel.from_color("#000000"),
+              Magick::Pixel.from_color("#000000")]
+    mask.store_pixels(0, 0, 1, 15, pixels)
+    mask.scale!(logo.columns, logo.rows)
 
-    gc = Magick::Draw.new
-    gc.composite(0, 30, 0, 0, mirror)
-    gc.draw(@image)
+    logo.alpha Magick::ActivateAlphaChannel
+    mask.alpha Magick::DeactivateAlphaChannel
+    logo.composite!(mask, Magick::CenterGravity, Magick::CopyOpacityCompositeOp)
 
-    gc = Magick::Draw.new
-    gc.composite(0, 16, 0, 0, base)
-    gc.draw(@image)
-    @image.write('logo.png')
+    final = bg.composite(logo, Magick::SouthGravity, Magick::OverCompositeOp)
+
+    final.write('logo.png')
   end
 
-  def draw_word(word, x, y, color, image)
+  def draw_word(word, x, color, image)
     gc = Magick::Draw.new
     gc.font = @font
-    gc.pointsize = 24 
+    gc.gravity Magick::WestGravity
+    pp @font
+    gc.pointsize = @size 
     gc.fill = color
-    gc.stroke = 'transparent'
-    gc.text(x,y,word)
+    gc.stroke = 'none'
+    gc.text(x,0,word)
     gc.draw(image)
   end
 
@@ -56,14 +73,10 @@ class Logo
 
     gc = Magick::Draw.new
     gc.font = @font
-    gc.pointsize = 24 
+    @size = 72
+    gc.pointsize = @size 
     @met1 = gc.get_type_metrics(@word1)
     @met2 = gc.get_type_metrics(@word2)
-    cols = @met1.width+@met2.width+30
-    rows = @met1.height+40
-    @image = Magick::Image.new(cols, rows) do
-      self.background_color = '#282828'
-    end
   end
 
 end

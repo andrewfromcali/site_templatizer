@@ -4,44 +4,39 @@ require 'RMagick'
 
 include Magick
 
-WIDTH = 650
-HEIGHT = 40
-
-stripes = ImageList.new
+w = WIDTH = 650
+h = HEIGHT = 80
 
 
-top_grad = GradientFill.new(0, 0, WIDTH, 0, "#dddddd", "#888888")
-stripes << Image.new(WIDTH, HEIGHT, top_grad)
-
-bottom_grad = GradientFill.new(0, 0, WIDTH, 0, "#757575", "#555555")
-stripes << Image.new(WIDTH, HEIGHT, bottom_grad)
-
-combined_grad = stripes.append(true)
-
-color = Image.new(combined_grad.columns, combined_grad.rows) do
-  self.background_color = "#87a5ff"
+bg = Image.new(w, h) do
+  self.background_color = "#282828"
 end
-
-background = combined_grad.composite(color, CenterGravity, ColorizeCompositeOp)
+reflection = Image.new(230, 60) do
+  self.background_color = "#282828"
+end
 
 gc = Draw.new
 gc.fill = 'white'
 gc.stroke = 'none'
 gc.pointsize = 42
+gc.font = '/Users/aa/Library/Fonts/CHICM___.TTF'
 
-gc.annotate(background, 0, 0, 70, HEIGHT, "RMAGICK")
+#gc.annotate(bg, 0, 0, 70, HEIGHT, "Lending Club")
 
-reflection = stripes[1].flip
-reflection.composite!(color, CenterGravity, ColorizeCompositeOp)
-gc.annotate(reflection, 0, 0, 70, HEIGHT, "RMAGICK")
-grad = GradientFill.new(0, 0, WIDTH, 0, "black", "gray35")
-opacity_mask = Image.new(WIDTH, HEIGHT, grad)
+#reflection = stripes[1]#.flip
+#reflection.composite!(color, CenterGravity, ColorizeCompositeOp)
+gc.annotate(reflection, 0, 0, 10, 50, "Lending Club")
+reflection.flip!
+reflection.crop!(0,0,230,33)
+grad = GradientFill.new(0, 0, 100, 0, "#900", "#000")
+opacity_mask = Image.new(230,33, grad)
 
 reflection.matte = true
 opacity_mask.matte = false
-reflection.composite!(opacity_mask, CenterGravity, CopyOpacityCompositeOp)
+reflection.composite!(opacity_mask, NorthGravity, CopyOpacityCompositeOp)
 
-reflection.flip!
-background.composite!(reflection, SouthWestGravity, OverCompositeOp)
+bg.composite!(reflection, SouthGravity, OverCompositeOp)
 
-background.write('test.png')
+fill = Magick::GradientFill.new(0, 0, 1, 0, "#443724", "#282828")
+img = Magick::Image.new(100, 20, fill);
+img.write('test.png')
