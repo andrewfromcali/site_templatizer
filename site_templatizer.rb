@@ -4,9 +4,12 @@ class SiteTemplatizer
   def initialize
     @images = {}
     @styles = {}
+    @words = File.read('words.txt').split("\n")
+    @max_words = @words.size
     @output = File.new('test.html', "w")
     write('<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">')
     write('<html>')
+    pp random_words
   end
   
   def post_run
@@ -16,6 +19,14 @@ class SiteTemplatizer
 
   def write(s)
     @output << "#{s}\n"
+  end
+
+  def random_word
+    @words[rand(@max_words)]
+  end
+
+  def random_words
+    "#{random_word}-#{random_word}"
   end
 
   def print(node, tab)
