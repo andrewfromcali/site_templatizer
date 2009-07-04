@@ -2,7 +2,7 @@ require 'rubygems'
 require 'pp'
 require 'RMagick'
 
-Rows = 2500
+Rows = 3500
 Cols = 800
 
 fonts = Dir['/Library/Fonts/*']

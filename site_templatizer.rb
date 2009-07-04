@@ -5,14 +5,21 @@ class SiteTemplatizer
     @images = {}
     @styles = {}
     @output = File.new('test.html', "w")
+    write('<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">')
+    write('<html>')
   end
   
   def post_run
+    write('</html>')
     @output.close
   end
 
+  def write(s)
+    @output << "#{s}\n"
+  end
+
   def print(node, tab)
-  
+    return if node.kind_of?(Hpricot::Text) or node.kind_of?(Hpricot::Comment)
     node.children.each do |n|
       handle_open(n, tab)
       print(n, " #{tab}")
@@ -22,36 +29,36 @@ class SiteTemplatizer
   end
   
   def exclude?(n)
-    return true if n.tag == 'script'
+    return true if n.name == 'script'
     
-    return true if n.tag == 'link' and n.attributes['type'] != 'text/css'
+    return true if n.name == 'link' and n.attributes['type'] != 'text/css'
       
     return false
   end
   
   def handle_open(n, tab)
-    if n.kind_of?(HTMLTree::Element) and not exclude?(n)
-      line = "#{tab}<#{n.tag} #{attributes(n)}"
-      if n.children.size > 0 or n.tag == 'div'
+    if n.kind_of?(Hpricot::Elem) and not exclude?(n)
+      line = "#{tab}<#{n.name} #{attributes(n)}"
+      if n.children.size > 0 or n.name == 'div'
         line = line + '>'
       else
         line = line + ' />'
       end
-      @output << line
-    elsif n.kind_of?(HTMLTree::Data)
+      write(line)
+    elsif n.kind_of?(Hpricot::Text)
       data = n.to_s.strip
-      @output << 'data' if data.size > 0
+      write('data') if data.size > 0
     end
   end
   
   def attributes(n)
     hash = n.attributes
     
-    if n.tag == 'img'
-      download_image(hash['src'])
+    if n.name == 'img'
+      #download_image(hash['src'])
       hash['src'] = "images/#{@images[hash['src']]}.png"
-    elsif n.tag == 'link'
-      download_css(hash['href'])
+    elsif n.name == 'link'
+      #download_css(hash['href'])
       hash['href'] = "styles/#{@styles[hash['src']]}.css"
     end
     
@@ -81,8 +88,9 @@ class SiteTemplatizer
   end
 
   def download_image(src)
-    return if true
     return if @images[src]
+    return if not src
+    src = "http://www.lendingclub.com#{src}" if src.index('http://') != 0
     puts "downloading #{src}"
     url = URI.parse(src)
     req = Net::HTTP::Get.new(url.path)
@@ -90,19 +98,16 @@ class SiteTemplatizer
     @images[src] = @images.size
     name = @images[src]
     suffix = src[-3..-1]
-    file = File.new("images/orig/#{name}.#{suffix}", "w")
+    file = File.new("images/#{name}.#{suffix}", "w")
     file << res.body
     file.close
-    orig = ImageList.new("images/orig/#{name}.#{suffix}").first
-    placeholder = Image.new(orig.columns, orig.rows) { self.background_color = "blue" }
-    placeholder.write("images/#{name}.png")
   rescue Object => e
     pp e
   end
   
   def handle_close(n, tab)
-    if n.kind_of?(HTMLTree::Element) and (n.children.size > 0 or n.tag == 'div') and not exclude?(n)
-      @output << "#{tab}</#{n.tag}>"
+    if n.kind_of?(Hpricot::Elem) and (n.children.size > 0 or n.name == 'div') and not exclude?(n)
+      write("#{tab}</#{n.name}>")
     end
   end
 
