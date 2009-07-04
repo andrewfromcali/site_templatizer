@@ -68,7 +68,7 @@ class SiteTemplatizer
       hash['src'] = "images/#{@images[hash['src']]}"
     elsif n.name == 'link'
       download_css(hash['href'])
-      hash['href'] = "styles/#{@styles[hash['src']]}.css"
+      hash['href'] = "styles/#{@styles[hash['href']]}"
     end
     
     buff = []
