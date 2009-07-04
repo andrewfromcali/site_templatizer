@@ -18,6 +18,7 @@ require 'site_templatizer.rb'
 #p = HTMLTree::Parser.new(true, true)
 #p.feed(data)
 
+`rm -rf images/*`
 doc = open("index.html") { |f| Hpricot(f) }
 st = SiteTemplatizer.new
 st.print(doc.root, '')

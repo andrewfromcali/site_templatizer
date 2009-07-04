@@ -9,7 +9,6 @@ class SiteTemplatizer
     @output = File.new('test.html', "w")
     write('<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">')
     write('<html>')
-    pp random_words
   end
   
   def post_run
@@ -66,8 +65,8 @@ class SiteTemplatizer
     hash = n.attributes
     
     if n.name == 'img'
-      #download_image(hash['src'])
-      hash['src'] = "images/#{@images[hash['src']]}.png"
+      download_image(hash['src'])
+      hash['src'] = "images/#{@images[hash['src']]}"
     elsif n.name == 'link'
       #download_css(hash['href'])
       hash['href'] = "styles/#{@styles[hash['src']]}.css"
@@ -100,16 +99,15 @@ class SiteTemplatizer
 
   def download_image(src)
     return if @images[src]
-    return if not src
-    src = "http://www.lendingclub.com#{src}" if src.index('http://') != 0
+    download_src = src
+    download_src = "http://www.lendingclub.com#{src}" if src.index('http://') != 0
     puts "downloading #{src}"
-    url = URI.parse(src)
+    url = URI.parse(download_src)
     req = Net::HTTP::Get.new(url.path)
     res = Net::HTTP.start(url.host, url.port) { |http| http.request(req) }
-    @images[src] = @images.size
-    name = @images[src]
     suffix = src[-3..-1]
-    file = File.new("images/#{name}.#{suffix}", "w")
+    @images[src] = "#{random_words}.#{suffix}"
+    file = File.new("images/#{@images[src]}", "w")
     file << res.body
     file.close
   rescue Object => e
