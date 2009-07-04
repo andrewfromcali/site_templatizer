@@ -130,8 +130,7 @@ class SiteTemplatizer
         file << "#{item} {\n"
         props.each do |prop|
           prop.each do |key, value|
-            check_for_image(key, value)
-            file << "#{key}: #{value};\n"
+            file << "#{key}: #{fix_image(key, value)};\n"
           end
         end
         file << "}\n"
@@ -139,17 +138,18 @@ class SiteTemplatizer
     end
   rescue Object => e
     pp e
-    pp e.backtrace
   end
 
-  def check_for_image(key, value)
+  def fix_image(key, value)
     if key == 'background' or key == 'background-image'
       matches = /url\((.*)\)/.match(value) 
-      return if not matches
-      url = matches[1]
-      url = url[2..-1] if url.index('..')
-      download_image(url)
+      return value if not matches
+      src = matches[1]
+      src = src[2..-1] if src.index('..')
+      download_image(src)
+      return value.gsub(/url\((.*)\)/, "url('file:///Users/aa/projects/site_templatizer/images/#{@images[src]}')")
     end
+    return value
   end
 
   def download_image(src)
@@ -160,7 +160,8 @@ class SiteTemplatizer
     handle_download_and_cache(res, 'images', cache_name, @images[src])
   rescue Object => e
     pp e
-    pp e.backtrace
+    pp src.size
+    pp src
   end
   
   def handle_close(n, tab)
