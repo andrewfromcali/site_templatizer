@@ -17,6 +17,7 @@ require 'site_templatizer.rb'
 #p.feed(data)
 
 `rm -rf images/*`
+`rm -rf styles/*`
 doc = open("index.html") { |f| Hpricot(f) }
 st = SiteTemplatizer.new
 st.print(doc.root, '')

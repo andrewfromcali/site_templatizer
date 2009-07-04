@@ -67,7 +67,7 @@ class SiteTemplatizer
       download_image(hash['src'])
       hash['src'] = "images/#{@images[hash['src']]}"
     elsif n.name == 'link'
-      #download_css(hash['href'])
+      download_css(hash['href'])
       hash['href'] = "styles/#{@styles[hash['src']]}.css"
     end
     
@@ -77,33 +77,15 @@ class SiteTemplatizer
     end
     buff.join(' ')
   end
-  
-  def download_css(href)
-    return if @styles[href]
-    puts "downloading #{href}"
-    url = URI.parse(href)
-    req = Net::HTTP::Get.new(url.path)
-    res = Net::HTTP.start(url.host, url.port) { |http| http.request(req) }
-    @styles[href] = @styles.size
-    name = @styles[href]
-    file = File.new("styles/orig/#{name}.css", "w")
-    file << res.body
-    file.close
-    file = File.new("styles/#{name}.css", "w")
-    file << res.body
-    file.close
-  rescue Object => e
-    pp e
-  end
 
-  def download_image(src)
-    return if @images[src]
-    cache_name = "cached_images/#{src.gsub(/\//,'_')}"
+  def read_from_cache_or_download(folder, src)
+    cache_name = "cached_#{folder}/#{src.gsub(/\//,'_')}"
 
     if File.exists?(cache_name)
       puts "downloading #{src} CACHED"
       res = OpenStruct.new
       res.body = File.read(cache_name)
+      return res, cache_name
     else
       download_src = src
       download_src = "http://www.lendingclub.com#{src}" if src.index('http://') != 0
@@ -111,16 +93,37 @@ class SiteTemplatizer
       url = URI.parse(download_src)
       req = Net::HTTP::Get.new(url.path)
       res = Net::HTTP.start(url.host, url.port) { |http| http.request(req) }
+      return res, cache_name
     end
-    suffix = src[-3..-1]
-    @images[src] = "#{random_words}.#{suffix}"
+  end
+
+  def handle_download_and_cache(res, folder, cache_name, src)
     file = File.new(cache_name, "w")
     file << res.body
-    file = File.new("images/#{@images[src]}", "w")
+    file = File.new("#{folder}/#{src}", "w")
     file << res.body
     file.close
+  end
+  
+  def download_css(href)
+    return if @styles[href]
+    res, cache_name = read_from_cache_or_download('styles', href)
+    @styles[href] = "#{random_words}.css"
+    handle_download_and_cache(res, 'styles', cache_name, @styles[href])
   rescue Object => e
     pp e
+    pp e.backtrace
+  end
+
+  def download_image(src)
+    return if @images[src]
+    res, cache_name = read_from_cache_or_download('images', src)
+    suffix = src[-3..-1]
+    @images[src] = "#{random_words}.#{suffix}"
+    handle_download_and_cache(res, 'images', cache_name, @images[src])
+  rescue Object => e
+    pp e
+    pp e.backtrace
   end
   
   def handle_close(n, tab)
