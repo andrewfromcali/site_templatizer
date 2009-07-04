@@ -112,20 +112,44 @@ class SiteTemplatizer
     handle_download_and_cache(res, 'styles', cache_name, @styles[href])
 
     sac = CSS::SAC::Parser.new
-    sheet = sac.parse(File.read("styles/#{@styles[href]}"))
+    if cache_name == 'cached_styles/_styles_master-2009.07.02-23-05-45-PDT.css'
+      sheet = Marshal.load(File.read('save.dat'))
+    else
+      sheet = sac.parse(File.read("styles/#{@styles[href]}"))
+    end
 
+    file = File.new("styles/#{@styles[href]}", "w")
     sheet.rules_by_property.map do |properties, rules|
       items = rules.map { |rule| rule.selector.to_css }.sort
-pp items
       props = properties.map do |key,value,important|
                 join_val = ('font-family' == key) ? ', ' : ' '
                 values = [value].flatten.join(join_val)
                 {"#{key}" => "#{values}#{important ? ' !important' : ''}"}
               end
+      items.each do |item|
+        file << "#{item} {\n"
+        props.each do |prop|
+          prop.each do |key, value|
+            check_for_image(key, value)
+            file << "#{key}: #{value};\n"
+          end
+        end
+        file << "}\n"
+      end
     end
   rescue Object => e
     pp e
     pp e.backtrace
+  end
+
+  def check_for_image(key, value)
+    if key == 'background' or key == 'background-image'
+      matches = /url\((.*)\)/.match(value) 
+      return if not matches
+      url = matches[1]
+      url = url[2..-1] if url.index('..')
+      download_image(url)
+    end
   end
 
   def download_image(src)
