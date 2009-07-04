@@ -5,24 +5,26 @@ include Magick
 
 class Logo
 
+  BG_COLOR = '#122246'
+
   def render
     logo = Magick::Image.new(800, 200) do
-      self.background_color = "#282828"
+      self.background_color = BG_COLOR
     end
-    draw_word(@word1, 0, 0, 'white', logo)
-    draw_word(@word2, @met1.width+2, 0, '#FF9807', logo)
+    draw_word(@word1, 0, 0, @color1, logo)
+    draw_word(@word2, @met1.width+2, 0, @color2, logo)
     logo.trim!
     orig = logo.copy
     logo.flip!
 
-    bg = Magick::Image.new(logo.columns*1, logo.rows*1.67) do
-      self.background_color = "#282828"
+    bg = Magick::Image.new(logo.columns*1, logo.rows*1.70) do
+      self.background_color = BG_COLOR
     end
 
     mask = Magick::Image.new(1, 15)
-    pixels = [Magick::Pixel.from_color("#000000"),
-              Magick::Pixel.from_color("#000000"),
-              Magick::Pixel.from_color("#000000"),
+    pixels = [Magick::Pixel.from_color("#333333"),
+              Magick::Pixel.from_color("#333333"),
+              Magick::Pixel.from_color("#333333"),
               Magick::Pixel.from_color("#333333"),
               Magick::Pixel.from_color("#222222"),
               Magick::Pixel.from_color("#1E1E1E"),
@@ -47,12 +49,12 @@ class Logo
     trans = Magick::Image.new(800, 200) do
       self.background_color = "none"
     end
-    draw_word(@word1, 0, 0, 'white', trans)
-    draw_word(@word2, @met1.width+2, 0, '#FF9807', trans)
+    draw_word(@word1, 0, 0, @color1, trans)
+    draw_word(@word2, @met1.width+2, 0, @color2, trans)
     trans.trim!
     final = final.composite(trans, Magick::NorthGravity, Magick::OverCompositeOp)
     done = Magick::Image.new(final.columns*1.20, final.rows*1.20) do
-      self.background_color = "#282828"
+      self.background_color = BG_COLOR
     end
     done = done.composite(final, Magick::SouthGravity, Magick::OverCompositeOp)
     done.write('logo.png')
@@ -84,10 +86,12 @@ class Logo
 
     gc = Magick::Draw.new
     gc.font = @font
-    @size = 36
+    @size = 22
     gc.pointsize = @size 
     @met1 = gc.get_type_metrics(@word1)
     @met2 = gc.get_type_metrics(@word2)
+    @color1 = '#ACE1AF'
+    @color2 = '#FFFFFF'
   end
 
 end
