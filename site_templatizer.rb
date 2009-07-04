@@ -110,6 +110,19 @@ class SiteTemplatizer
     res, cache_name = read_from_cache_or_download('styles', href)
     @styles[href] = "#{random_words}.css"
     handle_download_and_cache(res, 'styles', cache_name, @styles[href])
+
+    sac = CSS::SAC::Parser.new
+    sheet = sac.parse(File.read("styles/#{@styles[href]}"))
+
+    sheet.rules_by_property.map do |properties, rules|
+      items = rules.map { |rule| rule.selector.to_css }.sort
+pp items
+      props = properties.map do |key,value,important|
+                join_val = ('font-family' == key) ? ', ' : ' '
+                values = [value].flatten.join(join_val)
+                {"#{key}" => "#{values}#{important ? ' !important' : ''}"}
+              end
+    end
   rescue Object => e
     pp e
     pp e.backtrace
