@@ -5,6 +5,7 @@ class SiteTemplatizer
     @styles = {}
     @words = File.read('words.txt').split("\n")
     @max_words = @words.size
+    @prev_node = nil
     @output = File.new('test.html', "w")
     write('<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">')
     write('<html>')
@@ -38,8 +39,6 @@ class SiteTemplatizer
   end
   
   def exclude?(n)
-    return true if n.name == 'script'
-    
     return true if n.name == 'link' and n.attributes['type'] != 'text/css'
       
     return false
@@ -54,9 +53,10 @@ class SiteTemplatizer
         line = line + ' />'
       end
       write(line)
+      @prev_node = n.name
     elsif n.kind_of?(Hpricot::Text)
       data = n.to_s.strip
-      write('data') if data.size > 0
+      write(random_words) if data.size > 0 and @prev_node != 'script'
     end
   end
   
