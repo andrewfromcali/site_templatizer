@@ -1,5 +1,4 @@
 class SiteTemplatizer
-  include Magick
   
   def initialize
     @images = {}
@@ -99,14 +98,24 @@ class SiteTemplatizer
 
   def download_image(src)
     return if @images[src]
-    download_src = src
-    download_src = "http://www.lendingclub.com#{src}" if src.index('http://') != 0
-    puts "downloading #{src}"
-    url = URI.parse(download_src)
-    req = Net::HTTP::Get.new(url.path)
-    res = Net::HTTP.start(url.host, url.port) { |http| http.request(req) }
+    cache_name = "cached_images/#{src.gsub(/\//,'_')}"
+
+    if File.exists?(cache_name)
+      puts "downloading #{src} CACHED"
+      res = OpenStruct.new
+      res.body = File.read(cache_name)
+    else
+      download_src = src
+      download_src = "http://www.lendingclub.com#{src}" if src.index('http://') != 0
+      puts "downloading #{src}"
+      url = URI.parse(download_src)
+      req = Net::HTTP::Get.new(url.path)
+      res = Net::HTTP.start(url.host, url.port) { |http| http.request(req) }
+    end
     suffix = src[-3..-1]
     @images[src] = "#{random_words}.#{suffix}"
+    file = File.new(cache_name, "w")
+    file << res.body
     file = File.new("images/#{@images[src]}", "w")
     file << res.body
     file.close

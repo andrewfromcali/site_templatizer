@@ -1,11 +1,9 @@
 require 'rubygems'
 require 'hpricot'
 require 'open-uri'
-require 'pp'
+require 'ostruct'
 require 'net/http'
-require 'mechanize'
-require 'html/tree'
-require 'RMagick'
+require 'pp'
 require 'site_templatizer.rb'
 
 #http = Net::HTTP.new('www.cpp.com', 80)
