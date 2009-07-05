@@ -56,7 +56,7 @@ class SiteTemplatizer
       @prev_node = n.name
     elsif n.kind_of?(Hpricot::Text)
       data = n.to_s.strip
-      write(random_words) if data.size > 0 and @prev_node != 'script'
+      write(random_word) if data.size > 0 and @prev_node != 'script'
     end
   end
   
@@ -66,9 +66,13 @@ class SiteTemplatizer
     if n.name == 'img'
       download_image(hash['src'])
       hash['src'] = "images/#{@images[hash['src']]}"
+      hash['alt'] = ''
     elsif n.name == 'link'
       download_css(hash['href'])
       hash['href'] = "styles/#{@styles[hash['href']]}"
+    elsif n.name == 'a'
+      hash['href'] = '#'
+      hash['title'] = ''
     end
     
     buff = []
