@@ -5,7 +5,7 @@ include Magick
 
 class Logo
 
-  BG_COLOR = '#122246'
+  BG_COLOR = '#282828'
 
   def render
     logo = Magick::Image.new(800, 200) do
@@ -17,7 +17,7 @@ class Logo
     orig = logo.copy
     logo.flip!
 
-    bg = Magick::Image.new(logo.columns*1, logo.rows*1.70) do
+    bg = Magick::Image.new(logo.columns*1, logo.rows*2.15) do
       self.background_color = BG_COLOR
     end
 
@@ -86,11 +86,11 @@ class Logo
 
     gc = Magick::Draw.new
     gc.font = @font
-    @size = 22
+    @size = 20
     gc.pointsize = @size 
     @met1 = gc.get_type_metrics(@word1)
     @met2 = gc.get_type_metrics(@word2)
-    @color1 = '#ACE1AF'
+    @color1 = '#0798FF'
     @color2 = '#FFFFFF'
   end
 
